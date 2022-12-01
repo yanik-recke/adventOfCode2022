@@ -10,7 +10,6 @@ import java.util.List;
  * Lösung für Tag 1.
  * 
  * @author Yanik Recke
- *
  */
 public class Day_1 {
 
