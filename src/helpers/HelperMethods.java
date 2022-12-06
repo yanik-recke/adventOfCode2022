@@ -98,7 +98,7 @@ public class HelperMethods {
 			e.printStackTrace();
 		} 
 		
-		input = new int[i][j];
+		input = new int[j][i];
 		
 		i = 0;
 		j = 0;
@@ -108,7 +108,7 @@ public class HelperMethods {
 		    
 		    while (line != null) {
 		    	for (int k = 0; k < line.length(); k++) {
-		    		input[i][k] = line.charAt(k) - '0';
+		    		input[k][i] = line.charAt(k) - '0';
 		    	}
 		    	
 		        i++;
@@ -149,6 +149,5 @@ public class HelperMethods {
 	public static boolean isInbounds(int[][] arr, int x, int y) {
 		return x >= 0 && y >= 0 && x < arr.length && y < arr[x].length;
 	}
-	
 
 }
