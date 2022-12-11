@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Lösung für Tag 11.
+ * Lösung für Tag 11. 
  * 
  * @author Yanik Recke
  *
