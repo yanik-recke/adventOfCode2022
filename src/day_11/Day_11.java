@@ -8,7 +8,6 @@ import java.util.List;
  * Lösung für Tag 11. 
  * 
  * @author Yanik Recke
- *
  */
 public class Day_11 {
 
