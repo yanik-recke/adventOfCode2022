@@ -3,7 +3,7 @@ package day_10;
 import java.util.List;
 
 /**
- * Lösung für Tag 10.
+ * Lösung für Tag 10. 
  * 
  * @author Yanik Recke
  */
