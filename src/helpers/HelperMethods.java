@@ -123,6 +123,59 @@ public class HelperMethods {
 	}
 	
 	
+	
+	/**
+	 * Liest einen Input in einen 
+	 * mehrdimensionalen Array von Integern.
+	 * 
+	 * @param path - Pfad zur Datei
+	 * @return - mehrdimensionaler Array an Integern
+	 */
+	public static char[][] getInputAsTwoDimensionalCharArray(String path) {
+		assert (path != null);
+
+		char[][] input;
+		int i = 0;
+		int j = 0;
+		
+		try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+		    String line = br.readLine();
+		    j = line.length();
+		    
+		    while (line != null) {
+		        i++;
+		        line = br.readLine();
+		    }
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+		
+		input = new char[j][i];
+		
+		i = 0;
+		j = 0;
+		
+		try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+		    String line = br.readLine();
+		    
+		    while (line != null) {
+		    	for (int k = 0; k < line.length(); k++) {
+		    		input[k][i] = line.charAt(k);
+		    	}
+		    	
+		        i++;
+		        line = br.readLine();
+		    }
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+		
+		return input;
+	}
+	
+	
 	/**
 	 * Liest einen einzeiligen Input in einen
 	 * Array von Integern.
