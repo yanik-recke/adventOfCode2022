@@ -1,7 +1,9 @@
 package day_12;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -19,45 +21,52 @@ public class Day_12 {
 		System.out.println(part1(pathToInput) + " - " + part2(pathToInput));
 	}
 	
-	
+	/**
+	 * Einlesen des Inputs in eine Graph Struktur. Jedes
+	 * Zeichen ist ein Knoten. Ein Knoten ist dann mit einem
+	 * anderen verbunden, wenn der Wert des Zeichens kleiner ist, oder 
+	 * nur eins höher ist. Dann für den Graphen Dijkstra Algorithmus
+	 * anwenden, von Startposition 'S' aus.
+	 * 
+	 * @param path - Pfad zum Puzzle Input
+	 * @return - Länge des kürzesten Wegs von 'S' zu 'E'
+	 */
 	private static int part1(String path) {
 		int steps = 0;
 		Graph graph = new Graph();
-		
-		int count = 0;
 		
 		char[][] field = helpers.HelperMethods.getInputAsTwoDimensionalCharArray(path);
 		Node[][] fieldOfNodes = new Node[field.length][field[0].length];
 		
 		
 		Position start = null;
-		char currChar;
+		Character currChar;
 		
 		for (int x = 0; x < field.length; x++) {
 			for (int y = 0; y < field[x].length; y++) {
 				if (field[x][y] == 'E') {
-					fieldOfNodes[x][y] = new Node("E");
+					fieldOfNodes[x][y] = new Node("E", new Position(x,y));
+				} else if (field[x][y] == 'S'){
+					fieldOfNodes[x][y] = new Node("S", new Position(x,y));
+					start = new Position(x,y);
 				} else {
-					fieldOfNodes[x][y] = new Node(Integer.toString(count));
+					fieldOfNodes[x][y] = new Node(Integer.toString(x) + " - " + Integer.toString(y), new Position(x,y));
 				}
 				
-				count++;
 			}
 		}
 
-		count = 0;
-		
-		// Start Position bestimmen
 		for (int x = 0; x < field.length; x++) {
 			for (int y = 0; y < field[x].length; y++) {
 				currChar = field[x][y];
+				
 				Character temp;
 				int tempX = x;
 				int tempY = y - 1;
 				
 				if (isInbounds(field, tempX, tempY)) {
 					temp = field[tempX][tempY];
-					if (temp.compareTo(currChar) >= -1) {
+					if (((temp != 'S' && temp != 'E') && currChar.compareTo(temp) >= -1) || currChar == 'z' || currChar == 'S') {
 						fieldOfNodes[x][y].addDestination(fieldOfNodes[tempX][tempY], 1);
 					}
 				}
@@ -67,7 +76,7 @@ public class Day_12 {
 				
 				if (isInbounds(field, tempX, tempY)) {
 					temp = field[tempX][tempY];
-					if (temp.compareTo(currChar) >= -1) {
+					if (((temp != 'S' && temp != 'E') && currChar.compareTo(temp) >= -1) || currChar == 'z' || currChar == 'S') {
 						fieldOfNodes[x][y].addDestination(fieldOfNodes[tempX][tempY], 1);
 					}
 				}
@@ -77,7 +86,7 @@ public class Day_12 {
 				
 				if (isInbounds(field, tempX, tempY)) {
 					temp = field[tempX][tempY];
-					if (temp.compareTo(currChar) >= -1) {
+					if (((temp != 'S' && temp != 'E') && currChar.compareTo(temp) >= -1) || currChar == 'z' || currChar == 'S') {
 						fieldOfNodes[x][y].addDestination(fieldOfNodes[tempX][tempY], 1);
 					}
 				}
@@ -87,21 +96,13 @@ public class Day_12 {
 				
 				if (isInbounds(field, tempX, tempY)) {
 					temp = field[tempX][tempY];
-					if (temp.compareTo(currChar) >= -1) {
+					if (((temp != 'S' && temp != 'E') && currChar.compareTo(temp) >= -1) || currChar == 'z' || currChar == 'S') {
 						fieldOfNodes[x][y].addDestination(fieldOfNodes[tempX][tempY], 1);
 					}
 				}
 				
-				// Start Position festlegen
-				if (field[x][y] == 'S') {
-					start = new Position(x,y);
-				}
 			}
 		}
-		
-		
-		Position currPos = start;
-		boolean done = false;
 		
 		for (int x = 0; x < fieldOfNodes.length; x++) {
 			for (int y = 0; y < fieldOfNodes[x].length; y++) {
@@ -114,7 +115,6 @@ public class Day_12 {
 		for (Node node : graph0.getNodes()) {
 			if (node.getName().equals("E")) {
 				steps = node.getDistance();
-				System.out.println(node.getShortestPath());
 			}
 		}
 		
@@ -122,9 +122,113 @@ public class Day_12 {
 	}
 	
 	
+	/**
+	 * Beim Einlesen des Inputs alle 'a' Positionen
+	 * in eine Liste hinzufügen. Dann Dijkstra für alle 
+	 * möglichen Startpositionen durchführen und den Wert wiedergeben,
+	 * der am kleinsten ist.
+	 * 
+	 * @param path - Pfad zum Puzzle Input
+	 * @return - Länge des kürzesten Weg von einem 'a' zu 'E'
+	 */
 	private static int part2(String path) {
+		Graph graph = new Graph();
 		
-		return 0;
+		char[][] field = helpers.HelperMethods.getInputAsTwoDimensionalCharArray(path);
+		Node[][] fieldOfNodes = new Node[field.length][field[0].length];
+		
+		List<Position> listOfStarts = new ArrayList<>();
+		
+		Character currChar;
+		
+		for (int x = 0; x < field.length; x++) {
+			for (int y = 0; y < field[x].length; y++) {
+				if (field[x][y] == 'E') {
+					fieldOfNodes[x][y] = new Node("E", new Position(x,y));
+				} else if (field[x][y] == 'S'){
+					fieldOfNodes[x][y] = new Node("S", new Position(x,y));
+				} else {
+					fieldOfNodes[x][y] = new Node(Integer.toString(x) + " - " + Integer.toString(y), new Position(x,y));
+				}
+				
+				if (field[x][y] == 'a') {
+					listOfStarts.add(new Position(x,y));
+				}
+				
+			}
+		}
+
+		
+		for (int x = 0; x < field.length; x++) {
+			for (int y = 0; y < field[x].length; y++) {
+				currChar = field[x][y];
+				
+				Character temp;
+				int tempX = x;
+				int tempY = y - 1;
+				
+				if (isInbounds(field, tempX, tempY)) {
+					temp = field[tempX][tempY];
+					if (((temp != 'S' && temp != 'E') && currChar.compareTo(temp) >= -1) || currChar == 'z' || currChar == 'S') {
+						fieldOfNodes[x][y].addDestination(fieldOfNodes[tempX][tempY], 1);
+					}
+				}
+				
+				tempX = x + 1;
+				tempY = y;
+				
+				if (isInbounds(field, tempX, tempY)) {
+					temp = field[tempX][tempY];
+					if (((temp != 'S' && temp != 'E') && currChar.compareTo(temp) >= -1) || currChar == 'z' || currChar == 'S') {
+						fieldOfNodes[x][y].addDestination(fieldOfNodes[tempX][tempY], 1);
+					}
+				}
+				
+				tempX = x;
+				tempY = y + 1;
+				
+				if (isInbounds(field, tempX, tempY)) {
+					temp = field[tempX][tempY];
+					if (((temp != 'S' && temp != 'E') && currChar.compareTo(temp) >= -1) || currChar == 'z' || currChar == 'S') {
+						fieldOfNodes[x][y].addDestination(fieldOfNodes[tempX][tempY], 1);
+					}
+				}
+				
+				tempX = x - 1;
+				tempY = y;
+				
+				if (isInbounds(field, tempX, tempY)) {
+					temp = field[tempX][tempY];
+					if (((temp != 'S' && temp != 'E') && currChar.compareTo(temp) >= -1) || currChar == 'z' || currChar == 'S') {
+						fieldOfNodes[x][y].addDestination(fieldOfNodes[tempX][tempY], 1);
+					}
+				}
+				
+			}
+		}
+		
+		// alle Nodes dem Graphen hinzufügen
+		for (int x = 0; x < fieldOfNodes.length; x++) {
+			for (int y = 0; y < fieldOfNodes[x].length; y++) {
+				graph.addNode(fieldOfNodes[x][y]);
+			}
+		}
+		
+		
+		int steps = Integer.MAX_VALUE;
+		for (Position position : listOfStarts) {
+			Graph graph0 = calculateShortestPathFromSource(graph, fieldOfNodes[position.getX()][position.getY()]);
+			
+			for (Node node : graph0.getNodes()) {
+				if (node.getName().equals("E")) {
+					if (steps > node.getDistance()) {
+						steps = node.getDistance();
+					}
+				}
+			}
+		}
+		
+		return steps;
 	}
 	
 	
@@ -141,7 +245,16 @@ public class Day_12 {
 		return x >= 0 && y >= 0 && x < arr.length && y < arr[x].length;
 	}
 	
-	
+    
+	/**
+	 * Dijkstra Algorithmus. 
+	 * 
+	 * Quelle: https://www.baeldung.com/java-dijkstra
+	 * 
+	 * @param graph - Der zu verwendende Graph
+	 * @param source - Anfangsnode
+	 * @return - Graph, die Nodes haben die entsprechende Entfernung zum Startpunkt
+	 */
 	public static Graph calculateShortestPathFromSource(Graph graph, Node source) {
 	    source.setDistance(0);
 
@@ -168,9 +281,19 @@ public class Day_12 {
 	}
 	
 	
-	private static Node getLowestDistanceNode(Set < Node > unsettledNodes) {
+	/**
+	 * Holen der Node mit der kleinsten Entfernung aus
+	 * einem Set.
+	 * 
+	 * Quelle: https://www.baeldung.com/java-dijkstra
+	 * 
+	 * @param unsettledNodes - Set mit Nodes
+	 * @return - Node mit der kleinsten Entfernung aller Nodes aus dem Set
+	 */
+	private static Node getLowestDistanceNode(Set<Node> unsettledNodes) {
 	    Node lowestDistanceNode = null;
 	    int lowestDistance = Integer.MAX_VALUE;
+	    
 	    for (Node node: unsettledNodes) {
 	        int nodeDistance = node.getDistance();
 	        if (nodeDistance < lowestDistance) {
@@ -182,13 +305,25 @@ public class Day_12 {
 	}
 	
 	
+	/**
+	 * Vergleicht die wirkliche Distanz mit der neu
+	 * berechneten.
+	 * 
+	 * Quelle: https://www.baeldung.com/java-dijkstra
+	 * 
+	 * @param evaluationNode - aktuelle Node
+	 * @param edgeWeigh - Distanz
+	 * @param sourceNode - Startnode
+	 */
 	private static void calculateMinimumDistance(Node evaluationNode, Integer edgeWeigh, Node sourceNode) {
-			    Integer sourceDistance = sourceNode.getDistance();
-			    if (sourceDistance + edgeWeigh < evaluationNode.getDistance()) {
-			        evaluationNode.setDistance(sourceDistance + edgeWeigh);
-			        LinkedList<Node> shortestPath = new LinkedList<>(sourceNode.getShortestPath());
-			        shortestPath.add(sourceNode);
-			        evaluationNode.setShortestPath(shortestPath);
-			    }
-			}
+		Integer sourceDistance = sourceNode.getDistance();
+		
+		if (sourceDistance + edgeWeigh < evaluationNode.getDistance()) {
+			evaluationNode.setDistance(sourceDistance + edgeWeigh);
+			LinkedList<Node> shortestPath = new LinkedList<>(sourceNode.getShortestPath());
+			shortestPath.add(sourceNode);
+			evaluationNode.setShortestPath(shortestPath);
+		}
+	}
+	
 }

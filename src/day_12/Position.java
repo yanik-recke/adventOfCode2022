@@ -44,4 +44,11 @@ class Position {
 	public boolean equals(Object obj) {
 		return obj != null && obj instanceof Position && ((Position) obj).getX() == this.x && ((Position) obj).getY() == this.y;
 	}
+	
+	
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return this.x + " - " + this.y;
+	}
 }
