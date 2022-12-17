@@ -3,42 +3,36 @@ package day_15;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 
-public class Day_15 implements Runnable{
-	public final static int ROW = 10;
-	public volatile static int split = 500000;
+
+/**
+ * Lösung für Tag 15.
+ * 
+ * @author Yanik Recke
+ */
+public class Day_15 {
+	public final static int ROW = 20000;
+	
+	
 	public static void main(String[] args) {
 		String pathToInput = "src/day_15/input.txt";
 		
-		// System.out.println(part1(pathToInput));
-		//part2(pathToInput);
-		
-		Thread t1 = new Thread(new Day_15());
-		t1.run();
-		
-		Thread t2 = new Thread(new Day_15());
-		t2.run();
-		
-		Thread t3 = new Thread(new Day_15());
-		t3.run();
-		
-		Thread t4 = new Thread(new Day_15());
-		t4.run();
-		
-		Thread t5 = new Thread(new Day_15());
-		t5.run();
-		
-		Thread t6 = new Thread(new Day_15());
-		t6.run();
-		
-		Thread t7 = new Thread(new Day_15());
-		t7.run();
-		
-		Thread t8 = new Thread(new Day_15());
-		t8.run();
+		System.out.println("Part 1: " + part1(pathToInput) + " - Part 2: " + part2(pathToInput));
 	}
 	
+	
+	/**
+	 * Berechnet, ob die entsprechende Reihe von einem
+	 * Sensor aus mit der Entfernung zu seinem nähesten Beacon
+	 * erreichbar ist. Wenn ja, dann wird berechnet wie viel von dieser
+	 * Reihe, durch den Sensor "blockiert" wird und alle blockierten
+	 * Positionen einem Set hinzugefügt.
+	 * 
+	 * @param path - Pfad zum Puzzle Input
+	 * @return - Anzahl an "blockierter" Positionen
+	 */
 	private static int part1(String path) {
 		List<String> input = helpers.HelperMethods.getInputAsListOfString(path);
 		List<Sensor> sensors = new ArrayList<>();
@@ -96,9 +90,20 @@ public class Day_15 implements Runnable{
 		return impossible.size();
 	}
 	
-	private static int part2(String path, int splitThread) {
-		int splitThreadLow = splitThread - 500000;
-		
+	
+	/**
+	 * Berechnet für jede Reihe, startend bei 4.000.000
+	 * ob die entsprechende Reihe von einem Sensor mit der Länge
+	 * bis zu seinem nähesten Beacon erreicht werden kann. Wenn ja,
+	 * dann wird ein neues Intervall mit der entsprechenden Länge an
+	 * Positionen erstellt, die von dem Sensor "blockiert" werden. Wenn man
+	 * jeden Sensor für eine Reihe abgearbeitet hat, wird geguckt, ob sich der
+	 * gesuchte Beacon in der Reihe befinden kann.
+	 * 
+	 * @param path - Pfad zum Puzzle Input
+	 * @return - Angabe, was berechnet werden muss als String
+	 */
+	private static String part2(String path) {
 		List<String> input = helpers.HelperMethods.getInputAsListOfString(path);
 		List<Sensor> sensors = new ArrayList<>();
 		List<Position> listOfSensorPos = new ArrayList<>();
@@ -121,27 +126,17 @@ public class Day_15 implements Runnable{
 		
 		Position pos = null;
 		boolean found = false;
-		Set<Position> possible = new HashSet<>();
-		int max = 4000000;
 		
-		for (int row = splitThread; row >= splitThreadLow && !found; row--) {
-			possible = new HashSet<>();
-			
-			for (int x = 0; x <= max; x++) {
-				possible.add(new Position(x, row));
-			}
+		List<Interval> intervals = new ArrayList<>();
+		
+		Interval interval = null;
+		int row0 = -1;
+		for (int row = 4000000; row >= 0 && !found; row--) {
+			intervals = new ArrayList<>();
 			
 			for (Sensor sensor : sensors) {
 				int currX = sensor.position.getX();
 				int currY = sensor.position.getY();
-				
-				if (currY == row) {
-					possible.remove(sensor.position);
-				}
-				
-				if (sensor.nearestBeacon.getY() == row) {
-					possible.remove(sensor.nearestBeacon);
-				}
 				
 				int number = sensor.distanceToNearest;
 				int offset = 0;
@@ -163,36 +158,68 @@ public class Day_15 implements Runnable{
 				}
 			
 				if (yes) {
-					for (int x = number; x <= (currX + sensor.distanceToNearest - offset); x++) {	
-						possible.remove(new Position(x, row));
+					interval = new Interval(number, (currX + sensor.distanceToNearest - offset));
+					
+					if (intervals.size() == 0) {
+						intervals.add(interval);
+					} else {
+						boolean done = false;
+						
+						ListIterator<Interval> it = intervals.listIterator();
+						Interval temp;
+						
+						while (it.hasNext()) {
+							temp = it.next();
+							
+							if (interval.areTouching(temp)) {
+								it.remove();
+								interval = interval.makeItFitting(temp);
+								
+								if (!intervals.contains(interval)) {
+									it.add(interval);
+								}
+									
+								done = true;
+							}
+						}
+						
+						if (!done) {
+							intervals.add(interval);
+						}
 					}
 				}
+				
 
 			}
-			
-			if (possible.size() == 1) {
+
+			if (intervals.size() > 1) {
+				row0 = row;
+				found = true;
+			} else if (intervals.get(0).size() <= 4000000) {
+				row0 = row;
+				found = true;
+			} else if (intervals.get(0).lower <= 0 && intervals.get(0).upper <= 4000000) {
+				row0 = row;
+				found = true;
+			} else if (intervals.get(0).upper >= 4000000 && intervals.get(0).lower > 0) {
+				row0 = row;
 				found = true;
 			}
-
 		}
 		
-		for (Position position : possible) {
-			pos = position;
+		
+		int lowestLow = Integer.MAX_VALUE;
+		Interval lower = null;
+		
+		for (Interval inter : intervals) {
+			if (lowestLow > inter.lower) {
+				lowestLow = inter.lower;
+				lower = inter;
+			}
 		}
-		
-		System.out.println(pos);
 
-		return 0;
-	}
-	
-
-
-	@Override
-	public void run() {
-		int splitThread = split;
-		split += split;
-		
-		part2("src/day_15/input.txt", splitThread);
+		pos = new Position(lower.upper + 1, row0);
+		return pos.getX() + " * 4000000 + " + pos.getY();
 	}
 	
 }
