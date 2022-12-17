@@ -44,4 +44,16 @@ class Position {
 	public boolean equals(Object obj) {
 		return obj != null && obj instanceof Position && ((Position) obj).getX() == this.x && ((Position) obj).getY() == this.y;
 	}
+	
+	@Override
+	public int hashCode() {
+	    int result = x;
+	    result = 31 * result + y;
+	    return result;
+	}
+	
+	@Override
+	public String toString() {
+		return this.x + "|" + this.y;
+	}
 }
