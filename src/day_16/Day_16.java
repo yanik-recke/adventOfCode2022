@@ -153,10 +153,9 @@ public class Day_16 {
 			}
 		}
 	
-		
 		int temp = 0;
 		int currHighest = 0;
-		List<Valve> path0 = new ArrayList<>();
+		List<Pair<Valve, Integer>> path0 = new ArrayList<>();
 		
 		for (Valve element : possible) {
 			List<Valve> newPossible = new ArrayList<>(possible);
@@ -170,27 +169,59 @@ public class Day_16 {
 			
 		}
 		
-		System.out.println(paths);
+		int currMax = 0;
+		int counter = 0;
+		System.out.println(paths.size());
+		for (List<Pair<Valve, Integer>> combi : paths) {
+			System.out.println(counter++);
+			
+			if (combi.size() > 4) {
+				for (List<Pair<Valve, Integer>> combi0 : paths) {
+					int sndTempSum = 0;
+				
+					boolean contains = false;
+					Iterator<Pair<Valve, Integer>> it = combi0.iterator();
+				
+					while (it.hasNext() && !contains) {
+						Pair<Valve, Integer> nxtPair = it.next();
+					
+						sndTempSum += nxtPair.r();
+						if (combi.contains(nxtPair)) {
+							contains = true;
+						}
+					}
+				
+					if (!contains) {
+						int tempSum = 0;
+						for (Pair<Valve, Integer> pair : combi) {
+							tempSum += pair.r();
+						}
+					
+						if (tempSum + sndTempSum > currMax) {
+							currMax = tempSum + sndTempSum;
+						}
+					}
+				}
+			}
+		}
 		
-		
-		
-		return currHighest;
+		return currMax;
 	}
 	
 	// TODO
-	public static List<List<Valve>> paths = new ArrayList<>();
+	public static List<List<Pair<Valve, Integer>>> paths = new ArrayList<>();
 	
-	private static int calc_2(Valve valve, int distance, List<Valve> possible, int time, List<Valve> list) {
+	private static int calc_2(Valve valve, int distance, List<Valve> possible, int time, List<Pair<Valve, Integer>> list) {
 		time += distance + 1;
 		int press = 0;
 		int currHighest = 0;
-		List<Valve> newList;
+		List<Pair<Valve, Integer>> newList;
 
-		if (time < 30) {
-			press = (30 - time) * valve.flowRate;
+		if (time < 26) {
+			press = (26 - time) * valve.flowRate;
 			
 			if (possible.size() == 0) {
-				list.add(valve);
+				list.add(new Pair<Valve, Integer>(valve, press));
 				paths.add(list);
 			}
 			
@@ -200,7 +231,7 @@ public class Day_16 {
 				List<Valve> newPossible = new ArrayList<>(possible);
 				newPossible.remove(element);
 				newList = new ArrayList<>(list);
-				newList.add(valve);
+				newList.add(new Pair<Valve, Integer>(valve, press));
 				
 				paths.add(newList);
 				
