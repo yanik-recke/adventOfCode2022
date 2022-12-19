@@ -16,6 +16,7 @@ public class Pair<E, T> {
 	/** Rechtes Element des Paars */
 	private T right;
 
+	
 	/**
 	 * Konstruktor, setzt linkes und rechtes
 	 * Element.
@@ -28,6 +29,7 @@ public class Pair<E, T> {
 		this.right = right;
 	}
 
+	
 	/**
 	 * Gibt das linke Element wieder.
 	 * 
@@ -37,6 +39,7 @@ public class Pair<E, T> {
 		return this.left;
 	}
 
+	
 	/**
 	 * Gibt das rechte Element wieder.
 	 * 
@@ -53,6 +56,6 @@ public class Pair<E, T> {
 	
 	@Override
 	public boolean equals(Object obj) {
-		return obj instanceof Pair && ((Pair) obj).l() instanceof Valve && ((Pair) obj).l().equals(this.left);
+		return obj instanceof Pair && ((Pair<?, ?>) obj).l() instanceof Valve && ((Pair<?, ?>) obj).l().equals(this.left);
 	}
 }

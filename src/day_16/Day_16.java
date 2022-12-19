@@ -1,8 +1,6 @@
 package day_16;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -22,28 +20,26 @@ public class Day_16 {
 	public static void main(String[] args) {
 		String pathToInput = "src/day_16/input.txt";
 		
-		System.out.println(part1(pathToInput) + " - " + part2(pathToInput));
+		System.out.println("Part 1: " + part1(pathToInput));
+		System.out.print("Part 2: ");
+		System.out.println(part2(pathToInput));
 	}
 	
 	
+	/**
+	 * Rekursiv jede mögliche Permutation ermitteln und dann
+	 * immer die wählen, die am meisten pressure released.
+	 * Inline Kommentare für bessere Erklärung. Arbeitet mit calc().
+	 * 
+	 * @param path - Pfad zum Puzzle Input
+	 * @return - Pressure released
+	 */
 	private static int part1(String path) {
 		Map<String, Valve> valves = getValves(path);
+
+		Valve currValve = valves.get("AA");	
 		
-		boolean done = false;
-		Valve currValve = null;
-		Iterator<Valve> iterator = valves.values().iterator();
-		
-		// find first
-		while (iterator.hasNext() && !done) {
-			Valve temp = iterator.next();
-			if (temp.id.equals("AA")) {
-				done = true;
-				currValve = temp;
-			}
-		}
-		
-		
-		// Setting shortest path for every Valve 
+		// von jeder Valve zu jeder anderen Valve kürzesten Weg berechnen
 		for (Valve valve : valves.values()) {
 			Graph graph = new Graph();
 			for (Valve valve0 : valves.values()) {
@@ -61,6 +57,7 @@ public class Day_16 {
 		
 		List<Valve> possible = new ArrayList<>();
 		
+		// alle Valves mit flow rate > 0 zu den noch möglichen Valves hinzufügen
 		for (Valve element : valves.values()) {
 			if (element.flowRate > 0) {
 				possible.add(element);
@@ -71,12 +68,14 @@ public class Day_16 {
 		int temp = 0;
 		int currHighest = 0;
 		
+		// rekursive Berechnung des Pfads, durch den am meisten Pressure released wird
 		for (Valve element : possible) {
 			List<Valve> newPossible = new ArrayList<>(possible);
 			newPossible.remove(element);
 			
 			temp = calc(element, currValve.shortestPath.get(element), newPossible, 0);
 			
+			// Wenn ein neues Maximum gefunden, dann neu setzen
 			if (currHighest < temp) {
 				currHighest = temp;
 			}
@@ -86,20 +85,35 @@ public class Day_16 {
 	}
 	
 	
+	/**
+	 * Rekursive Berechnung eines Pfads.
+	 * 
+	 * @param valve - aktuelle Valve
+	 * @param distance - Entfernung, die zur aktuellen Valve zurückgelegt werden musste
+	 * @param possible - die noch möglichen Valves
+	 * @param time - aktuell vergangene Zeit
+	 * @return - pressure die durch die eigene Valve releast wird + die pressure durch die darauffolgenden (Rekursion)
+	 */
 	private static int calc(Valve valve, int distance, List<Valve> possible, int time) {
+		// Zeit um Distanz und Öffnen (1) erhöhen
 		time += distance + 1;
+		// Eigene Pressure auf 0 setzen
 		int press = 0;
 		int currHighest = 0;
 		
+		// Nur, wenn überhaupt noch Zeit ist
 		if (time < 30) {
+			// Berechnung der releasten pressure
 			press = (30 - time) * valve.flowRate;
 			
 			int temp = 0;
 		
+			// Durchgehen jeder noch möglichen Valve
 			for (Valve element : possible) {
 				List<Valve> newPossible = new ArrayList<>(possible);
 				newPossible.remove(element);
 			
+				// Berechnung der besten Kombination
 				temp = calc(element, valve.shortestPath.get(element), newPossible, time);
 			
 				if (currHighest < temp) {
@@ -108,28 +122,25 @@ public class Day_16 {
 			}
 		}
 		
+		// Eigene releaste pressure + die höchst berechnete zurückgeben
 		return currHighest + press;
 	}
 	
 	
+	/**
+	 * Alle möglichen Pfade berechnen. Für jeden Pfad
+	 * jede Komplementärmenge prüfen und die größte Summe, die
+	 * sich aus zwei Pfaden ergibt, ist die maximal releasbare pressure.
+	 * 
+	 * @param path - Pfad zum Puzzle Input
+	 * @return - maximal releasbare pressure
+	 */
 	private static int part2(String path) {
 		Map<String, Valve> valves = getValves(path);
 		
-		boolean done = false;
-		Valve currValve = null;
-		Iterator<Valve> iterator = valves.values().iterator();
+		Valve currValve = valves.get("AA");	
 		
-		// find first
-		while (iterator.hasNext() && !done) {
-			Valve temp = iterator.next();
-			if (temp.id.equals("AA")) {
-				done = true;
-				currValve = temp;
-			}
-		}
-		
-		
-		// Setting shortest path for every Valve 
+		// Kürzeste Distanz von jedem Valve zu jedem Valve berechnen
 		for (Valve valve : valves.values()) {
 			Graph graph = new Graph();
 			for (Valve valve0 : valves.values()) {
@@ -153,28 +164,25 @@ public class Day_16 {
 			}
 		}
 	
-		int temp = 0;
-		int currHighest = 0;
+		
+		List<List<Pair<Valve, Integer>>> paths = new ArrayList<>();
+		
 		List<Pair<Valve, Integer>> path0 = new ArrayList<>();
 		
+		// Berechnung jedes Pfades
 		for (Valve element : possible) {
 			List<Valve> newPossible = new ArrayList<>(possible);
 			newPossible.remove(element);
 			
-			temp = calc_2(element, currValve.shortestPath.get(element), newPossible, 0, path0);
-			
-			if (currHighest < temp) {
-				currHighest = temp;
-			}
-			
+			calc_2(element, currValve.shortestPath.get(element), newPossible, 0, path0, paths);
 		}
 		
 		int currMax = 0;
-		int counter = 0;
-		System.out.println(paths.size());
+
+		
+		// Vergleichen jedes Pfades mit jedem anderen Pfad
 		for (List<Pair<Valve, Integer>> combi : paths) {
-			System.out.println(counter++);
-			
+			// Sinnvoller Ausschluss
 			if (combi.size() > 4) {
 				for (List<Pair<Valve, Integer>> combi0 : paths) {
 					int sndTempSum = 0;
@@ -208,10 +216,19 @@ public class Day_16 {
 		return currMax;
 	}
 	
-	// TODO
-	public static List<List<Pair<Valve, Integer>>> paths = new ArrayList<>();
 	
-	private static int calc_2(Valve valve, int distance, List<Valve> possible, int time, List<Pair<Valve, Integer>> list) {
+	/**
+	 * Rekursive Berechnung Pfade. Hinzufügen jedes Pfades in Liste von Listen
+	 * 
+	 * @param valve - aktuelle Valve
+	 * @param distance - Entfernung die zur aktuellen Valve zurückgelegt werden musste
+	 * @param possible - noch besuchbare Valves
+	 * @param time - bis jetzt vergangene Zeit
+	 * @param list - Liste mit Valves des aktuellen Pfads
+	 * @param paths - Liste aller Pfade
+	 * @return - maximal releasbare Pressure durch einen einzelnen Pfad
+	 */
+	private static int calc_2(Valve valve, int distance, List<Valve> possible, int time, List<Pair<Valve, Integer>> list, List<List<Pair<Valve, Integer>>> paths) {
 		time += distance + 1;
 		int press = 0;
 		int currHighest = 0;
@@ -235,10 +252,9 @@ public class Day_16 {
 				
 				paths.add(newList);
 				
-				temp = calc_2(element, valve.shortestPath.get(element), newPossible, time, newList);
+				temp = calc_2(element, valve.shortestPath.get(element), newPossible, time, newList, paths);
 			
 				if (currHighest < temp) {
-					//list.add(element);
 					currHighest = temp;
 				}
 			}
@@ -249,9 +265,20 @@ public class Day_16 {
 	
 	
 	
-
 	
+	/**
+	 * Parsen des Inputs
+	 * 
+	 * @param path - Pfad zum Puzzle Input
+	 * @return - Map mit ID auf Valve
+	 */
 	private static Map<String, Valve> getValves(String path){
+		/*
+		 * Wäre auch ohne Map machbar, habe es aber 
+		 * so gelassen, da dies mein erster Ansatz war und
+		 * es auch ganz angenehem ist, per ID / Name auf die
+		 * Valves zugreifen zu können.
+		 */
 		List<String> input = helpers.HelperMethods.getInputAsListOfString(path);
 		Map<String, Valve> valves = new LinkedHashMap<>();
 		
