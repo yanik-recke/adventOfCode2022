@@ -1,13 +1,13 @@
 package day_17;
 
 /**
- * Positionsklasse.
+ * Positionsklasse mit Koordinaten als long.
  * 
  * @author Yanik Recke
  */
-class Position {
+class PositionLong {
 	private int x = 0;
-	private int y = 0;
+	private long y = 0;
 	
 	/**
 	 * Konstruktor, setzt x und y.
@@ -15,7 +15,7 @@ class Position {
 	 * @param x
 	 * @param y
 	 */
-	public Position(int x, int y) {
+	public PositionLong(int x, long y) {
 		this.x = x;
 		this.y = y;
 	}
@@ -35,20 +35,20 @@ class Position {
 	 * 
 	 * @return - y-Koordinate
 	 */
-	public int getY() {
+	public long getY() {
 		return this.y;
 	}
 	
 	
 	@Override
 	public boolean equals(Object obj) {
-		return obj != null && obj instanceof Position && ((Position) obj).getX() == this.x && ((Position) obj).getY() == this.y;
+		return obj != null && obj instanceof PositionLong && ((PositionLong) obj).getX() == this.x && ((PositionLong) obj).getY() == this.y;
 	}
 	
 	@Override
 	public int hashCode() {
 	    int result = x;
-	    result = 31 * result + y;
+	    result = 31 * result + (int) y;
 	    return result;
 	}
 	

@@ -30,6 +30,8 @@ import java.util.Set;
 public class Stone {
 	/** Einzelteile eines Steins */
 	private final Position[] parts;
+	/** Typ des Steins */
+	private final StoneType type;
 	
 	
 	/**
@@ -39,14 +41,16 @@ public class Stone {
 	 * @param type - der Typ des zu erstellenden Steins
 	 */
 	public Stone(Position currHighestPos, StoneType type) {
+		this.type = type;
+		
 		int y = currHighestPos.getY() + 4;
+		
 		
 		switch (type) {
 			case CROSS -> {
 				this.parts = new Position[]{
 						new Position(3, y + 2), 
 						new Position(4, y + 1), 
-						new Position(3, y + 1),
 						new Position(2, y + 1),
 						new Position(3, y)
 				};
@@ -91,6 +95,16 @@ public class Stone {
 			}
 		}
 		
+	}
+	
+	
+	/**
+	 * Getter für den Typ des Steins.
+	 * 
+	 * @return - der Typ des Steins
+	 */
+	public StoneType getType() {
+		return this.type;
 	}
 	
 	
@@ -144,9 +158,8 @@ public class Stone {
 	}
 	
 	
-	/*
-	 * Verschiebt alle Einzelteile eines Steins eine x-Koordinate nach
-	 * links.
+	/**
+	 * Verschiebt alle Einzelteile eines Steins nach links.
 	 */
 	public void moveLeft() {
 		for (int i = 0; i < parts.length; i++) {
@@ -166,13 +179,13 @@ public class Stone {
 		boolean collides = false;
 		
 		for (int i = 0; i < parts.length && !collides; i++) {
-			Position nxtPos = new Position(parts[i].getX(), parts[i].getY() + 1);
+			Position nxtPos = new Position(parts[i].getX(), parts[i].getY() - 1);
 			if (settled.contains(nxtPos) || nxtPos.getY() < 0) {
 				collides = true;
 			}
 		}
 		
-		return collides;
+		return !collides;
 	}
 	
 	
@@ -196,7 +209,7 @@ public class Stone {
 			}
 		}
 		
-		return collides;
+		return !collides;
 	}
 	
 	
@@ -217,7 +230,7 @@ public class Stone {
 			}
 		}
 		
-		return collides;
+		return !collides;
 	}
 	
 	
@@ -256,4 +269,5 @@ public class Stone {
 		
 		return temp;
 	}
+	
 }

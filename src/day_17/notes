@@ -1,0 +1,31 @@
+CROSS - <<><<
+REVERSED_L - <>><>>
+LINE - <<>>>>
+
+beginn: counter =  250
+gefunden: counter = 285
+-> länge: 35
+
+-> 250 bis jetzt schon gefallen, d.h. -250
+
+höhe zu beginn: 384 (383)
+höhe am ende: 437 (436)
+höhe durch einen zyklus: 53
+
+
+steine sollen fallen = 1000000000000
+
+steine, die noch fallen müssen nach 250 = 999999999750
+
+
+999999999750 / 35 = 28571428564,285714286 -> durchläufe
+28571428564 * 35 = 999999999740
+-> 10 Durchläufe nach letztem Zyklus
+
+Lösung: für jedes Element im Zyklus speichern wie viel Höhe dazugekommen ist durch den Stein
+
+28571428564 -> ganze
++ 10 weitere
+
+
+384 + 28571428564 * 53
