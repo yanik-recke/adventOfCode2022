@@ -32,6 +32,7 @@ public class Day_19 {
 		
 		List<String> input = helpers.HelperMethods.getInputAsListOfString(path);
 
+		List<Robot[]> robot_costs = new ArrayList<>();
 
 		for (String line : input) {
 			String[] temp = line.split(" ");
@@ -52,28 +53,48 @@ public class Day_19 {
 			all_robots[3].cost.add(new Material(Integer.parseInt(temp[27]), MaterialType.ORE));
 			all_robots[3].cost.add(new Material(Integer.parseInt(temp[30]), MaterialType.OBSIDIAN));
 			
-			// wie viel von jedem Material gerade vorhanden ist
-			Map<MaterialType, Integer> storage = new HashMap<>();
-			
-			for (MaterialType material : MaterialType.values()) {
-				storage.put(material, 0);
-			}
-			
-			// wie viele Roboter vorhanden sind
-			Map<RobotType, Integer> robots = new HashMap<>();
-			
-			for (RobotType type : RobotType.values()) {
-				robots.put(type, 0);
-			}
-			
-			// Beginn mit einem Ore Roboter
-			robots.put(RobotType.ORE, 1);
-			
-			highest = calc(storage, robots, all_robots, calcPossible(storage, all_robots), 0);
+			robot_costs.add(all_robots);
 		}
 		
 		
+		// wie viel von jedem Material gerade vorhanden ist
+		Map<MaterialType, Integer> storage = new HashMap<>();
+
+		for (MaterialType material : MaterialType.values()) {
+			storage.put(material, 0);
+		}
+		
+		Day_19_Run x = new Day_19_Run(storage, initCurrRobots(), robot_costs.get(0), calcPossible(storage, robot_costs.get(0)));
+		Thread t = new Thread(x);
+		t.start();
+		
+		highest = calc(storage, initCurrRobots(), robot_costs.get(1), calcPossible(storage, robot_costs.get(1)), 0);
+		
+		try {
+			t.join();
+		} catch (InterruptedException e) {
+			// sollte nicht passieren
+			e.printStackTrace();
+		}
+		
+		System.out.println(x.result + " - " + highest);
+		
 		return highest;
+	}
+	
+	
+	private static Map<RobotType, Integer> initCurrRobots(){
+		// wie viele Roboter vorhanden sind
+		Map<RobotType, Integer> robots = new HashMap<>();
+
+		for (RobotType type : RobotType.values()) {
+			robots.put(type, 0);
+		}
+		
+		// Beginn mit einem Ore Roboter
+		robots.put(RobotType.ORE, 1);
+		
+		return robots;
 	}
 	
 	
@@ -87,9 +108,8 @@ public class Day_19 {
 	 * @return - Liste mit allen Robotertypen die gebaut werden können, enthält immer
 	 			 mind. NONE
 	 */
-	private static List<RobotType> calcPossible(Map<MaterialType, Integer> storage, Robot[] robots) {
-		List<RobotType> possibles = new ArrayList<>();
-		possibles.add(RobotType.NONE);
+	protected static Set<RobotType> calcPossible(Map<MaterialType, Integer> storage, Robot[] robots) {
+		Set<RobotType> possibles = new HashSet<>();
 		
 		for (Robot robot : robots) {
 			Iterator<Material> it = robot.cost.iterator();
@@ -107,20 +127,17 @@ public class Day_19 {
 			}
 		}
 		
+		possibles.add(RobotType.NONE);
 		return possibles;
 	}
 	
 	
 	
-	private static int calc(Map<MaterialType, Integer> storage, Map<RobotType, Integer> currRobots, Robot[] robots, List<RobotType> possible, int time) {
+	protected static int calc(Map<MaterialType, Integer> storage, Map<RobotType, Integer> currRobots, Robot[] robots, Set<RobotType> possible, int time) {
 		time++;
 		int currHighest = 0;
 		
-		if (time == 24) {
-			System.out.println("hier");			
-		}
-		
-		if (time < 24) {
+		if (time <= 24) {
 			// Einsammeln:
 			Map<MaterialType, Integer> new_storage = new HashMap<>(storage);
 
@@ -140,31 +157,38 @@ public class Day_19 {
 						new_storage.put(MaterialType.OBSIDIAN,
 								storage.get(MaterialType.OBSIDIAN) + currRobots.get(typeOfBuilt));
 					}
+					
+					case NONE -> {
+						;
+					}
 
+					// GEODE
 					default -> {
 						new_storage.put(MaterialType.GEODE, storage.get(MaterialType.GEODE) + currRobots.get(typeOfBuilt));
 					}
 				}
 			}
 			
-			// Wenn man ein Geode Roboter bauen kann, diesen aufjedenfall bauen
+			// Wenn man ein Geode Roboter bauen kann, diesen immer bauen
 			if (possible.contains(RobotType.GEODE)) {
 				// Den, der gebaut wird, um eins erhöhen
 				Map<RobotType, Integer> tempRobots = new HashMap<>(currRobots);
 				tempRobots.put(RobotType.GEODE, tempRobots.get(RobotType.GEODE) + 1);
 
+				Map<MaterialType, Integer> tempStorage = new HashMap<>(new_storage);
+				
 				// Abziehen der verwendeten Ressourcen
 				for (Robot robot : robots) {
 					if (robot.type == RobotType.GEODE) {
 						for (Material cost : robot.cost) {
-							new_storage.put(cost.type, new_storage.get(cost.type) - cost.amount);
+							tempStorage.put(cost.type, tempStorage.get(cost.type) - cost.amount);
 						}
 					}
 				}
 
-				List<RobotType> newPossible = calcPossible(new_storage, robots);
+				Set<RobotType> newPossible = calcPossible(tempStorage, robots);
 
-				int temp = calc(new_storage, tempRobots, robots, newPossible, time);
+				int temp = calc(tempStorage, tempRobots, robots, newPossible, time);
 
 				if (temp > currHighest) {
 					currHighest = temp;
@@ -178,25 +202,27 @@ public class Day_19 {
 						Map<RobotType, Integer> tempRobots = new HashMap<>(currRobots);
 						tempRobots.put(type, tempRobots.get(type) + 1);
 
+						Map<MaterialType, Integer> tempStorage = new HashMap<>(new_storage);
+						
 						// Abziehen der verwendeten Ressourcen
 						for (Robot robot : robots) {
 							if (robot.type == type) {
 								for (Material cost : robot.cost) {
-									new_storage.put(cost.type, new_storage.get(cost.type) - cost.amount);
+									tempStorage.put(cost.type, tempStorage.get(cost.type) - cost.amount);
 								}
 							}
 						}
 
-						List<RobotType> newPossible = calcPossible(new_storage, robots);
+						Set<RobotType> newPossible = calcPossible(tempStorage, robots);
 
-						int temp = calc(new_storage, tempRobots, robots, newPossible, time);
+						int temp = calc(tempStorage, tempRobots, robots, newPossible, time);
 
 						if (temp > currHighest) {
 							currHighest = temp;
 						}
 					} else {
 						// falls NONE (kein Roboter wird gebaut):
-						List<RobotType> newPossible = calcPossible(new_storage, robots);
+						Set<RobotType> newPossible = calcPossible(new_storage, robots);
 
 						// currRobots hat sich nicht verändert, kann weiter verwendet werden
 						int temp = calc(new_storage, currRobots, robots, newPossible, time);
@@ -207,13 +233,11 @@ public class Day_19 {
 					}
 				}
 			}
+		} else {
+			currHighest = storage.get(MaterialType.GEODE);
 		}
 		
-		if (storage.get(MaterialType.GEODE) > 4) {
-			System.out.println("ss");
-		}
-		
-		return storage.get(MaterialType.GEODE);
+		return currHighest;
 	}
 	
 	
