@@ -15,21 +15,25 @@ public class Day_19_Run implements Runnable{
 	private Map<RobotType, Integer> currRobots;
 	private Robot[] robots;
 	private Set<RobotType> possible;
+	private int time;
 	
 	public Day_19_Run(Map<MaterialType, Integer> storage,
 			Map<RobotType, Integer> currRobots ,
 			Robot[] robots,
-			Set<RobotType> possible) {
+			Set<RobotType> possible,
+			int time) {
 		this.storage = new HashMap<MaterialType, Integer>(storage);
 		this.currRobots = new HashMap<RobotType, Integer>(currRobots);
 		this.robots = robots;
 		this.possible = new HashSet<RobotType>(possible);
+		this.time = time;
 	}
 	
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		this.result = Day_19.calc(this.storage, this.currRobots, this.robots, this.possible, 0);
+		this.result = Day_19.calc(this.storage, this.currRobots, this.robots, this.possible, 0, 0, time);
+		System.out.println("done");
 	}
 
 	
