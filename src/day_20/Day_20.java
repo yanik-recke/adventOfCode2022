@@ -12,13 +12,8 @@ public class Day_20 {
 
 	public static void main(String[] args) {
 		String pathToInput = "src/day_20/input.txt";
-		
-		long key = 811589153;
-		
-		System.out.println(key * 8927L);
-		
-		
-		System.out.println(part1(pathToInput));
+				
+		System.out.println(part2(pathToInput));
 	}
 	
 	
@@ -119,9 +114,93 @@ public class Day_20 {
 	}
 	
 	
-	private static int part2(String path) {
+	private static long part2(String path) {
+		ListNode head = new ListNode(0, null, null, true, 0);
+		int id = 1;
+		long key = 811589153;
+		
+		List<String> input = helpers.HelperMethods.getInputAsListOfString(path);
+		
+		ListNode temp = head;
+		ListNode prev = null;
+		ListNode next = null;
+		int idOfZero = 0;
+		
+		for (int i = 0; i < input.size() - 1; i++) {
+			temp.setValue(Long.parseLong(input.get(i)) * key);
+			
+			next = new ListNode(0, null, null, false, id++);
+			temp.setNext(next);
+			next.setPrev(temp);
+			prev = temp;
+			temp = next;
+		}
+		
+		temp.setValue(Long.parseLong(input.get(input.size() - 1)));
+		temp.setPrev(prev);
+		temp.setNext(head);
+		head.setPrev(temp);
+		
+		boolean found = false;
+		ListNode runner = head;
 		
 		
-		return 0;
+		// Id von 0 finden
+		while (!found) {
+			if (runner.getValue() == 0) {
+				idOfZero = runner.getId();
+				found = true;
+			}
+			
+			runner = runner.getNext();
+		}
+		
+		System.out.println("asdasd " + id);
+		
+		for (int i = 0; i < id; i++) {
+			ListNode currNode = head.getNodeByIdForward(i);
+			long move = currNode.getValue();
+			System.out.println(i);
+			ListNode insertAt = currNode;
+			
+			if (move != 0) {
+				currNode.removeNode();
+			}
+			System.out.println(i);
+			
+			if (move > 0) {
+				for (int j = 0; j < move; j++) {
+					insertAt = insertAt.getNext();
+				}
+			} else if (move < 0) {
+				for (int j = 0; j > move; j--) {
+					insertAt = insertAt.getPrev();
+				}
+				insertAt = insertAt.getPrev();
+			} else {
+				// wenn 0, nichts machen
+				continue;
+			}
+			
+			insertAt.insertNode(currNode);
+			head = insertAt;
+		}
+		
+		ListNode currNode = head.getNodeByIdForward(idOfZero);
+		
+		long sum = 0;
+		for (int i = 0; i <= 3000; i++) {
+			if (i == 1000) {
+				sum += currNode.getValue();
+			} else if (i == 2000) {
+				sum += currNode.getValue();
+			} else if (i == 3000) {
+				sum += currNode.getValue();
+			}
+			
+			currNode = currNode.getNext();
+		}
+		
+		return sum;
 	}
 }
