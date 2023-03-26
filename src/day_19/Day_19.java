@@ -1,4 +1,4 @@
-package day_19_without_part2;
+package day_19;
 
 import java.util.ArrayList;
 import java.util.HashMap;
