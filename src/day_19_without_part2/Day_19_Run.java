@@ -1,4 +1,4 @@
-package day_19;
+package day_19_without_part2;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,25 +16,26 @@ public class Day_19_Run implements Runnable{
 	private Robot[] robots;
 	private Set<RobotType> possible;
 	private int time;
+	private Map<RobotType, Robot> costs;
 	
 	public Day_19_Run(Map<MaterialType, Integer> storage,
 			Map<RobotType, Integer> currRobots ,
 			Robot[] robots,
 			Set<RobotType> possible,
-			int time) {
+			int time,
+			Map<RobotType, Robot> costs) {
 		this.storage = new HashMap<MaterialType, Integer>(storage);
 		this.currRobots = new HashMap<RobotType, Integer>(currRobots);
 		this.robots = robots;
 		this.possible = new HashSet<RobotType>(possible);
 		this.time = time;
+		this.costs = costs;
 	}
 	
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
-		this.result = Day_19.calc(this.storage, this.currRobots, this.robots, this.possible, 0, 0, time);
+		this.result = Day_19.calc(this.storage, this.currRobots, this.robots, this.possible, 0, 0, time, costs);
 		System.out.println("done");
 	}
-
 	
 }

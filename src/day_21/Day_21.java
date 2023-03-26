@@ -34,7 +34,6 @@ public class Day_21 {
 		}
 		
 		while (known.get("root") == null) {
-			System.out.println(known.size());
 			for (String key : unknown.keySet()) {
 				String temp = unknown.get(key);
 				String op1 = temp.substring(0, temp.indexOf(' '));
@@ -60,6 +59,10 @@ public class Day_21 {
 					}
 				
 				}
+			}
+			
+			for (String key : known.keySet()) {
+				unknown.remove(key);
 			}
 		}
 		

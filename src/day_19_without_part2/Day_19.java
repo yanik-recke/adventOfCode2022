@@ -1,4 +1,4 @@
-package day_19;
+package day_19_without_part2;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,8 +24,8 @@ public class Day_19 {
 		String pathToInput = "src/day_19/input.txt";
 		
 		//System.out.println(part1(pathToInput) + " - " + part2(pathToInput));
-		//System.out.println(part1(pathToInput));
-		System.out.println(part2(pathToInput));
+		System.out.println(part1(pathToInput));
+		//System.out.println(part2(pathToInput));
 	}
 	
 	
@@ -35,7 +35,10 @@ public class Day_19 {
 		List<String> input = helpers.HelperMethods.getInputAsListOfString(path);
 
 		List<Robot[]> robot_costs = new ArrayList<>();
-
+		List<Map<RobotType, Robot>> costs = new ArrayList<>();
+		
+		int j = 0;
+		
 		for (String line : input) {
 			String[] temp = line.split(" ");
 			
@@ -43,18 +46,30 @@ public class Day_19 {
 			
 			all_robots[0] = new Robot(RobotType.ORE);
 			all_robots[0].cost.add(new Material(Integer.parseInt(temp[6]), MaterialType.ORE));
+			costs.add(new HashMap<>());
+			costs.get(j).put(RobotType.ORE, new Robot(RobotType.ORE));
+			costs.get(j).get(RobotType.ORE).cost.add(new Material(Integer.parseInt(temp[6]), MaterialType.ORE));
 			
 			all_robots[1] = new Robot(RobotType.CLAY);
 			all_robots[1].cost.add(new Material(Integer.parseInt(temp[12]), MaterialType.ORE));
+			costs.get(j).put(RobotType.CLAY, new Robot(RobotType.CLAY));
+			costs.get(j).get(RobotType.CLAY).cost.add(new Material(Integer.parseInt(temp[12]), MaterialType.ORE));
 
 			all_robots[2] = new Robot(RobotType.OBSIDIAN);
 			all_robots[2].cost.add(new Material(Integer.parseInt(temp[18]), MaterialType.ORE));
 			all_robots[2].cost.add(new Material(Integer.parseInt(temp[21]), MaterialType.CLAY));
+			costs.get(j).put(RobotType.OBSIDIAN, new Robot(RobotType.OBSIDIAN));
+			costs.get(j).get(RobotType.OBSIDIAN).cost.add(new Material(Integer.parseInt(temp[18]), MaterialType.ORE));
+			costs.get(j).get(RobotType.OBSIDIAN).cost.add(new Material(Integer.parseInt(temp[21]), MaterialType.CLAY));
 
 			all_robots[3] = new Robot(RobotType.GEODE);
 			all_robots[3].cost.add(new Material(Integer.parseInt(temp[27]), MaterialType.ORE));
 			all_robots[3].cost.add(new Material(Integer.parseInt(temp[30]), MaterialType.OBSIDIAN));
+			costs.get(j).put(RobotType.GEODE, new Robot(RobotType.GEODE));
+			costs.get(j).get(RobotType.GEODE).cost.add(new Material(Integer.parseInt(temp[27]), MaterialType.ORE));
+			costs.get(j).get(RobotType.GEODE).cost.add(new Material(Integer.parseInt(temp[30]), MaterialType.OBSIDIAN));
 			
+			j++;
 			robot_costs.add(all_robots);
 		}
 		
@@ -65,14 +80,14 @@ public class Day_19 {
 		for (int i = 0; i < input.size() - 1; i++) {
 			Map<MaterialType, Integer> storage = initStorage();
 			
-			runs[i] = new Day_19_Run(storage, initCurrRobots(), robot_costs.get(i), calcPossible(storage, robot_costs.get(i)), 24); 
+			runs[i] = new Day_19_Run(storage, initCurrRobots(), robot_costs.get(i), calcPossible(storage, robot_costs.get(i)), 24, costs.get(i)); 
 			threads[i] = new Thread(runs[i]);
 			threads[i].start();
 			System.out.println(i);
 		}
 		
 		Map<MaterialType, Integer> storage = initStorage();
-		highest = calc(storage, initCurrRobots(), robot_costs.get(29), calcPossible(storage, robot_costs.get(29)), 0, 0, 24);
+		highest = calc(storage, initCurrRobots(), robot_costs.get(29), calcPossible(storage, robot_costs.get(29)), 0, 0, 24, costs.get(29));
 		
 		System.out.println(highest);
 		for (Thread t : threads) {
@@ -161,13 +176,15 @@ public class Day_19 {
 	// for part 1 = 24, part 2 = 32
 	private static final int UB_TIME = 32;
 	
-	protected static int calc(Map<MaterialType, Integer> storage, Map<RobotType, Integer> currRobots, Robot[] robots, Set<RobotType> possible, int time, int alreadyReached, int currEarliest) {
+	protected static int calc(Map<MaterialType, Integer> storage, Map<RobotType, Integer> currRobots, Robot[] robots, Set<RobotType> possible, int time, int alreadyReached, int currEarliest, Map<RobotType, Robot> costs) {
 		time++;
 		int currHighest = 0;
 		
 		int sum = (((UB_TIME - (time - 1))  + 1) * (UB_TIME - (time - 1))) / 2 - (UB_TIME - (time - 1)) + (UB_TIME - (time - 1)) * currRobots.get(RobotType.GEODE);
 		
 		if (time > currEarliest && !currRobots.containsKey(RobotType.GEODE)) {
+			return currHighest;
+		} else if (time == currEarliest && !possible.contains(RobotType.GEODE) && !currRobots.containsKey(RobotType.GEODE)) {
 			return currHighest;
 		}
 		
@@ -213,13 +230,9 @@ public class Day_19 {
 
 					Map<MaterialType, Integer> tempStorage = new HashMap<>(new_storage);
 
-					// Abziehen der verwendeten Ressourcen
-					for (Robot robot : robots) {
-						if (robot.type == RobotType.GEODE) {
-							for (Material cost : robot.cost) {
-								tempStorage.put(cost.type, tempStorage.get(cost.type) - cost.amount);
-							}
-						}
+					// Abziehen der Kosten
+					for (Material cost : costs.get(RobotType.GEODE).cost) {
+						tempStorage.put(cost.type, tempStorage.get(cost.type) - cost.amount);
 					}
 
 					Set<RobotType> newPossible = calcPossible(tempStorage, robots);
@@ -230,7 +243,7 @@ public class Day_19 {
 						tempEarliest = time;
 					}
 
-					int temp = calc(tempStorage, tempRobots, robots, newPossible, time, currHighest, tempEarliest);
+					int temp = calc(tempStorage, tempRobots, robots, newPossible, time, currHighest, tempEarliest, costs);
 
 					if (temp > currHighest) {
 						currHighest = temp;
@@ -240,10 +253,10 @@ public class Day_19 {
 				}
 				
 			// in letzter Minute, keinen mehr produzieren
-			} else{
+			} else if (time != UB_TIME) {
 				for (RobotType type : possible) {
 
-					if (time != UB_TIME && type != RobotType.NONE) {
+					if (type != RobotType.NONE) {
 						// Den, der gebaut wird, um eins erhöhen
 						Map<RobotType, Integer> tempRobots = new HashMap<>(currRobots);
 						tempRobots.put(type, tempRobots.get(type) + 1);
@@ -251,17 +264,13 @@ public class Day_19 {
 						Map<MaterialType, Integer> tempStorage = new HashMap<>(new_storage);
 						
 						// Abziehen der verwendeten Ressourcen
-						for (Robot robot : robots) {
-							if (robot.type == type) {
-								for (Material cost : robot.cost) {
-									tempStorage.put(cost.type, tempStorage.get(cost.type) - cost.amount);
-								}
-							}
+						for (Material cost : costs.get(RobotType.GEODE).cost) {
+							tempStorage.put(cost.type, tempStorage.get(cost.type) - cost.amount);
 						}
 
 						Set<RobotType> newPossible = calcPossible(tempStorage, robots);
 						
-						int temp = calc(tempStorage, tempRobots, robots, newPossible, time, currHighest, currEarliest);
+						int temp = calc(tempStorage, tempRobots, robots, newPossible, time, currHighest, currEarliest, costs);
 
 						if (temp > currHighest) {
 							currHighest = temp;
@@ -277,7 +286,7 @@ public class Day_19 {
 						}
 						
 						// currRobots hat sich nicht verändert, kann weiter verwendet werden
-						int temp = calc(new_storage, currRobots, robots, newPossible, time, currHighest, currEarliest);
+						int temp = calc(new_storage, currRobots, robots, newPossible, time, currHighest, currEarliest, costs);
 
 						if (temp > currHighest) {
 							currHighest = temp;
@@ -300,6 +309,10 @@ public class Day_19 {
 
 		List<Robot[]> robot_costs = new ArrayList<>();
 
+		
+		List<Map<RobotType, Robot>> costs = new ArrayList<>();
+		
+		int j = 0;
 		for (String line : input) {
 			String[] temp = line.split(" ");
 			
@@ -307,18 +320,30 @@ public class Day_19 {
 			
 			all_robots[0] = new Robot(RobotType.ORE);
 			all_robots[0].cost.add(new Material(Integer.parseInt(temp[6]), MaterialType.ORE));
+			costs.add(new HashMap<>());
+			costs.get(j).put(RobotType.ORE, new Robot(RobotType.ORE));
+			costs.get(j).get(RobotType.ORE).cost.add(new Material(Integer.parseInt(temp[6]), MaterialType.ORE));
 			
 			all_robots[1] = new Robot(RobotType.CLAY);
 			all_robots[1].cost.add(new Material(Integer.parseInt(temp[12]), MaterialType.ORE));
+			costs.get(j).put(RobotType.CLAY, new Robot(RobotType.CLAY));
+			costs.get(j).get(RobotType.CLAY).cost.add(new Material(Integer.parseInt(temp[12]), MaterialType.ORE));
 
 			all_robots[2] = new Robot(RobotType.OBSIDIAN);
 			all_robots[2].cost.add(new Material(Integer.parseInt(temp[18]), MaterialType.ORE));
 			all_robots[2].cost.add(new Material(Integer.parseInt(temp[21]), MaterialType.CLAY));
+			costs.get(j).put(RobotType.OBSIDIAN, new Robot(RobotType.OBSIDIAN));
+			costs.get(j).get(RobotType.OBSIDIAN).cost.add(new Material(Integer.parseInt(temp[18]), MaterialType.ORE));
+			costs.get(j).get(RobotType.OBSIDIAN).cost.add(new Material(Integer.parseInt(temp[21]), MaterialType.CLAY));
 
 			all_robots[3] = new Robot(RobotType.GEODE);
 			all_robots[3].cost.add(new Material(Integer.parseInt(temp[27]), MaterialType.ORE));
 			all_robots[3].cost.add(new Material(Integer.parseInt(temp[30]), MaterialType.OBSIDIAN));
+			costs.get(j).put(RobotType.GEODE, new Robot(RobotType.GEODE));
+			costs.get(j).get(RobotType.GEODE).cost.add(new Material(Integer.parseInt(temp[27]), MaterialType.ORE));
+			costs.get(j).get(RobotType.GEODE).cost.add(new Material(Integer.parseInt(temp[30]), MaterialType.OBSIDIAN));
 			
+			j++;
 			robot_costs.add(all_robots);
 		}
 		
@@ -329,14 +354,14 @@ public class Day_19 {
 		for (int i = 0; i < input.size() - 1; i++) {
 			Map<MaterialType, Integer> storage = initStorage();
 			
-			runs[i] = new Day_19_Run(storage, initCurrRobots(), robot_costs.get(i), calcPossible(storage, robot_costs.get(i)), 32); 
+			runs[i] = new Day_19_Run(storage, initCurrRobots(), robot_costs.get(i), calcPossible(storage, robot_costs.get(i)), 32, costs.get(i)); 
 			threads[i] = new Thread(runs[i]);
 			threads[i].start();
 			System.out.println(i);
 		}
 		
 		Map<MaterialType, Integer> storage = initStorage();
-		highest = calc(storage, initCurrRobots(), robot_costs.get(2), calcPossible(storage, robot_costs.get(2)), 0, 0, 32);
+		highest = calc(storage, initCurrRobots(), robot_costs.get(2), calcPossible(storage, robot_costs.get(2)), 0, 0, 32, costs.get(2));
 		
 		for (Thread t : threads) {
 			try {
