@@ -13,6 +13,11 @@ public class Day_20 {
 	public static void main(String[] args) {
 		String pathToInput = "src/day_20/input.txt";
 		
+		long key = 811589153;
+		
+		System.out.println(key * 8927L);
+		
+		
 		System.out.println(part1(pathToInput));
 	}
 	
