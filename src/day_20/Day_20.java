@@ -12,10 +12,12 @@ public class Day_20 {
 
 	public static void main(String[] args) {
 		String pathToInput = "src/day_20/input.txt";
-				
+		long test = 811589153L;
+
+		System.out.println(part1(pathToInput));
 		System.out.println(part2(pathToInput));
 	}
-	
+
 	
 	/**
 	 * Erstellen einer doppelt verketteten Listenstruktur.
@@ -70,19 +72,22 @@ public class Day_20 {
 		for (int i = 0; i < id; i++) {
 			ListNode currNode = head.getNodeByIdForward(i);
 			long move = currNode.getValue();
-			
+			long offset;
+
 			ListNode insertAt = currNode;
 			
-			if (move != 0) {
+			if (((offset = (move % (id - 1))) != 0) && (move != 0)) {
 				currNode.removeNode();
+			} else {
+				move = 0;
 			}
 			
 			if (move > 0) {
-				for (int j = 0; j < move; j++) {
+				for (int j = 0; j < offset; j++) {
 					insertAt = insertAt.getNext();
 				}
 			} else if (move < 0) {
-				for (int j = 0; j > move; j--) {
+				for (int j = 0; j > offset; j--) {
 					insertAt = insertAt.getPrev();
 				}
 				insertAt = insertAt.getPrev();
@@ -96,7 +101,7 @@ public class Day_20 {
 		}
 		
 		ListNode currNode = head.getNodeByIdForward(idOfZero);
-		
+
 		long sum = 0;
 		for (int i = 0; i <= 3000; i++) {
 			if (i == 1000) {
@@ -112,82 +117,94 @@ public class Day_20 {
 		
 		return sum;
 	}
-	
-	
+
+
+	/**
+	 * Funktioniert wie Part 1, nur wird der Key angewandt und
+	 * dann 10 mal gemixt.
+	 *
+	 * @param path - Pfad zum Input
+	 * @return - die Summe der 1000., 2000. und 3000. Zahl nach 0
+	 */
 	private static long part2(String path) {
+		long key = 811589153L;
+
 		ListNode head = new ListNode(0, null, null, true, 0);
 		int id = 1;
-		long key = 811589153;
-		
+
 		List<String> input = helpers.HelperMethods.getInputAsListOfString(path);
-		
+
 		ListNode temp = head;
 		ListNode prev = null;
 		ListNode next = null;
 		int idOfZero = 0;
-		
+
 		for (int i = 0; i < input.size() - 1; i++) {
-			temp.setValue(Long.parseLong(input.get(i)) * key);
-			
+			long val = Long.parseLong(input.get(i));
+
+			temp.setValue(val);
+
 			next = new ListNode(0, null, null, false, id++);
 			temp.setNext(next);
 			next.setPrev(temp);
 			prev = temp;
 			temp = next;
 		}
-		
-		temp.setValue(Long.parseLong(input.get(input.size() - 1)));
+
+		temp.setValue(Long.parseLong(input.get(input.size() - 1)) * key);
 		temp.setPrev(prev);
 		temp.setNext(head);
 		head.setPrev(temp);
-		
+
 		boolean found = false;
 		ListNode runner = head;
-		
-		
+
+
 		// Id von 0 finden
 		while (!found) {
 			if (runner.getValue() == 0) {
 				idOfZero = runner.getId();
 				found = true;
 			}
-			
+
 			runner = runner.getNext();
 		}
-		
-		System.out.println("asdasd " + id);
-		
-		for (int i = 0; i < id; i++) {
-			ListNode currNode = head.getNodeByIdForward(i);
-			long move = currNode.getValue();
-			System.out.println(i);
-			ListNode insertAt = currNode;
-			
-			if (move != 0) {
-				currNode.removeNode();
-			}
-			System.out.println(i);
-			
-			if (move > 0) {
-				for (int j = 0; j < move; j++) {
-					insertAt = insertAt.getNext();
+
+		for (int k = 0; k < 10; k++) {
+			for (int i = 0; i < id; i++) {
+				ListNode currNode = head.getNodeByIdForward(i);
+				long move = currNode.getValue();
+				long offset;
+
+				ListNode insertAt = currNode;
+
+				if (((offset = (move % (id - 1))) != 0) && (move != 0)) {
+					currNode.removeNode();
+				} else {
+					move = 0;
 				}
-			} else if (move < 0) {
-				for (int j = 0; j > move; j--) {
+
+				if (move > 0) {
+					for (int j = 0; j < offset; j++) {
+						insertAt = insertAt.getNext();
+					}
+				} else if (move < 0) {
+					for (int j = 0; j > offset; j--) {
+						insertAt = insertAt.getPrev();
+					}
 					insertAt = insertAt.getPrev();
+				} else {
+					// wenn 0, nichts machen
+					continue;
 				}
-				insertAt = insertAt.getPrev();
-			} else {
-				// wenn 0, nichts machen
-				continue;
+
+				insertAt.insertNode(currNode);
+				head = insertAt;
 			}
-			
-			insertAt.insertNode(currNode);
-			head = insertAt;
 		}
-		
+
 		ListNode currNode = head.getNodeByIdForward(idOfZero);
-		
+
 		long sum = 0;
 		for (int i = 0; i <= 3000; i++) {
 			if (i == 1000) {
@@ -197,10 +214,11 @@ public class Day_20 {
 			} else if (i == 3000) {
 				sum += currNode.getValue();
 			}
-			
+
 			currNode = currNode.getNext();
 		}
-		
+
+		// too low: 447185623303
 		return sum;
 	}
 }
