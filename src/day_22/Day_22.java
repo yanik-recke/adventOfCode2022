@@ -85,8 +85,7 @@ public class Day_22 {
 				prevIdx = idx;
 			}
 		}
-		
-		//instr.add(instructions.substring(instructions.length() - 1));
+
 		instr.add("22");
 		Position pos = null;
 		Direction facing = Direction.RIGHT;
@@ -100,26 +99,9 @@ public class Day_22 {
 		}
 		
 		for (String go : instr) {
-			
+
 			int y = pos.getY();
 			int x = pos.getX();
-//			
-//			for (int tempY = 0; tempY < field[0].length; tempY++) {
-//				for (int tempX = 0; tempX < field.length; tempX++) {
-//					if (tempX == x && tempY == y) 
-//						System.out.print("x");
-//					else 
-//						System.out.print(field[tempX][tempY]);
-//				}
-//				System.out.println();
-//			}
-//			
-//			System.out.println("XXXXXXXXXXXXXXXX");
-//			System.out.println("");
-//			System.out.println("");
-//			System.out.println("");
-//			System.out.println("");
-//			System.out.println("");
 			
 			if ("R".equals(go)) {
 				switch (facing) {
@@ -277,17 +259,7 @@ public class Day_22 {
 				}
 			}
 		}
-		
 
-		// input zeichen
-//		for (int y = 0; y < maxY; y++) {
-//			for (int x = 0; x < maxX; x++) {
-//				System.out.print(field[x][y]);
-//			}
-//			System.out.println();
-//		}
-		
-		// too low: 197100 - 19701
 		System.out.println(pos.getX() + " - " + pos.getY() + " - " + facing);
 		return 1000 * (pos.getY() + 1) + 4 * (pos.getX() + 1) + facing.ordinal();
 	}
