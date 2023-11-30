@@ -1,4 +1,3 @@
 # adventOfCode2022
-Lösungen für adventOfCode2022
 
-https://adventofcode.com/
+These are my solutions for the adventOfCode 2022
