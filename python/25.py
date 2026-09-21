@@ -28,6 +28,10 @@ def from_safu(s: str) -> int:
 dec_n = sum(from_safu(l) for l in Path("in25.txt").read_text().splitlines())
 qui_n = g(str(dec_n))
 
+
+# solver not neccessarily needed but cooler
+# other solution: you can also map remainders with division by 5
+# 0 -> -2, 1 -> -1, 2 -> 0, 3 -> 1, 4 -> 2
 s = Solver()
 
 x = [Int(f'x{i}') for i in range(len(qui_n))]
