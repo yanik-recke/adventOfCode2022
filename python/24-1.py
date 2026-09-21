@@ -95,37 +95,50 @@ for i in range(1, ticks):
 
 
 # queue providing tick and position
-q: list[tuple[int, tuple[int, int], int]] = []
-visited: set[tuple[int, tuple[int, int], int]] = set()
+
+def bfs(src: tuple[int, int], dst: tuple[int, int], start_tick: int) -> int:
+    q: list[tuple[int, tuple[int, int], int]] = []
+    visited: set[tuple[int, tuple[int, int], int]] = set()
+    dirs = [(0, -1), (1, 0), (0, 1), (-1, 0), (0, 0)]
+    q.append((start_tick, src, 1))
+
+    while len(q) > 0:
+        state = q.pop(0)
+
+        if state in visited:
+            continue
+
+        t, (x, y), s = state
+        visited.add(state)
+
+        if (t + 1) % ticks == 0: t = -1
+
+        cv = valleys[t + 1]
+
+        for dx, dy in dirs:
+            nx, ny = x + dx, y + dy
+
+            if (nx, ny) == dst: 
+                return s
+            
+            if nx == 0 or nx == W: 
+                if (nx, ny) == src:
+                    q.append((t + 1, (nx, ny), s + 1))
+                
+                continue
+            if ny == 0 or ny == H: 
+                if (nx, ny) == src:
+                    q.append((t + 1, (nx, ny), s + 1))
+
+                continue
+            if (nx, ny) in cv and len(cv[(nx, ny)]) == 1 and 0 in cv[(nx, ny)]:
+                q.append((t + 1, (nx, ny), s + 1))
+
+    raise Exception("This will never happen")
 
 
-dirs = [(0, -1), (1, 0), (0, 1), (-1, 0), (0, 0)]
-q.append((0, start, 1))
-
-while len(q) > 0:
-    state = q.pop(0)
-
-    if state in visited:
-        continue
-
-    t, (x, y), s = state
-    visited.add(state)
-
-    if (t + 1) % ticks == 0: t = -1
-
-    cv = valleys[t + 1]
-
-    for dx, dy in dirs:
-        nx, ny = x + dx, y + dy
-
-        if (nx, ny) == goal: 
-            print(s)
-            exit(0)
-
-        if nx == 0 or nx == W: continue
-        if ny == 0 or ny == H: continue
-        if (nx, ny) in cv and len(cv[(nx, ny)]) == 1 and 0 in cv[(nx, ny)]:
-            q.append((t + 1, (nx, ny), s + 1))
-
+hinweg = bfs(start, goal, 0)
+rueckweg = bfs(goal, start, (hinweg % ticks))
+print(hinweg + rueckweg + bfs(start, goal, ((hinweg + rueckweg) % ticks)))
 
 # too low 252
