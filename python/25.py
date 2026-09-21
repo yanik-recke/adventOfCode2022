@@ -44,7 +44,7 @@ s.add(sum(x[i] * pow(5, i) for i in range(len(qui_n))) == dec_n)
 
 if s.check() == sat:
     model = s.model()
-    result = "".join(rev_safu[model[x[i]].as_long()] for i in range(len(qui_n) - 1, -1, -1))
+    result = "".join(rev_safu[model[x[i]].as_long()] for i in range(len(qui_n) - 1, -1, -1)) # type: ignore
     print(result)
 else:
     print("No model found")
